@@ -38,7 +38,7 @@ CREATE TABLE songs (
     title varchar,
     artist_id varchar,
     year int,
-    duration time
+    duration float
 )
 """)
 
