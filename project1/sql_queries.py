@@ -17,7 +17,8 @@ CREATE TABLE songplays (
     song_id int,
     artist_id int,
     session_id int,
-    location varchar, user_agent varchar
+    location varchar,
+    user_agent varchar
 )
 """)
 
@@ -46,8 +47,8 @@ CREATE TABLE artists (
     artist_id int PRIMARY KEY NOT NULL,
     name varchar,
     location varchar,
-    latitude numerical,
-    longitude numerical
+    latitude float,
+    longitude float
 )
 """)
 
