@@ -28,7 +28,7 @@ CREATE TABLE users (
     first_name varchar,
     last_name varchar,
     gender varchar,
-    level int
+    level varchar
 )
 """)
 
