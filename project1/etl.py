@@ -23,24 +23,44 @@ def process_song_file(cur, filepath):
 
 def process_log_file(cur, filepath):
     # open log file
-    df =
+    df = pd.read_json(filepath, lines=True)
 
     # filter by NextSong action
-    df =
+    df = df[df['page'] == 'NextSong']
 
     # convert timestamp column to datetime
-    t =
+    t = pd.to_datetime(df['ts'], unit='ms')
 
     # insert time data records
-    time_data =
-    column_labels =
-    time_df =
+    time_data = [t, t.dt.hour, t.dt.day, t.dt.week, t.dt.month, t.dt.year, t.dt.weekday]
+    column_labels = ['start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday']
 
-    for i, row in time_df.iterrows():
-        cur.execute(time_table_insert, list(row))
+    time_list = []
+    for n in range(len(time_data[0].index)):
+        i = time_data[0].index[n]
+        time_dict = {
+            'start_time': time_data[0][i],
+            'hour': time_data[1][i].item(),
+            'day': time_data[2][i].item(),
+            'week': time_data[3][i].item(),
+            'month': time_data[4][i].item(),
+            'year': time_data[5][i].item(),
+            'weekday': time_data[6][i].item()
+        }
 
-    # load user table
+    time_list.append(time_dict)
+
+    for row in time_list:
+        cur.execute(time_table_insert, list(row.values()))
+    # time_df =
+
+    # for i, row in time_df.iterrows():
+    #     cur.execute(time_table_insert, list(row))
+
+    # Filter for the columns in the user table, and drop duplicates based on unique userId
     user_df =
+        df[['userId', 'firstName', 'lastName', 'gender', 'level']]
+        .drop_duplicates(subset='userId')
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -53,8 +73,18 @@ def process_log_file(cur, filepath):
         results = cur.execute(song_select, (row.song, row.artist, row.length))
         songid, artistid = results if results else None, None
 
-        # insert songplay record
-        songplay_data =
+        # Insert songplay record
+        songplay_data = (
+            index,
+            pd.to_datetime(row['ts'], unit='ms'),
+            row['userId'],
+            row['level'],
+            song_id,
+            artist_id,
+            row['sessionId'],
+            row['location'],
+            row['userAgent']
+        )
         cur.execute(songplay_table_insert, songplay_data)
 
 
