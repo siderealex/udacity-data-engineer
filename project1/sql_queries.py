@@ -14,8 +14,8 @@ CREATE TABLE songplays (
     start_time time,
     user_id int,
     level int,
-    song_id int,
-    artist_id int,
+    song_id varchar,
+    artist_id varchar,
     session_id int,
     location varchar,
     user_agent varchar
@@ -34,9 +34,9 @@ CREATE TABLE users (
 
 song_table_create = ("""
 CREATE TABLE songs (
-    song_id int PRIMARY KEY NOT NULL,
+    song_id varchar PRIMARY KEY NOT NULL,
     title varchar,
-    artist_id int,
+    artist_id varchar,
     year int,
     duration time
 )
@@ -44,7 +44,7 @@ CREATE TABLE songs (
 
 artist_table_create = ("""
 CREATE TABLE artists (
-    artist_id int PRIMARY KEY NOT NULL,
+    artist_id varchar PRIMARY KEY NOT NULL,
     name varchar,
     location varchar,
     latitude float,
