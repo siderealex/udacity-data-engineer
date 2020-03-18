@@ -11,9 +11,9 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 songplay_table_create = ("""
 CREATE TABLE songplays (
     songplay_id int PRIMARY KEY NOT NULL,
-    start_time time,
+    start_time datetime,
     user_id int,
-    level int,
+    level varchar,
     song_id varchar,
     artist_id varchar,
     session_id int,
@@ -54,7 +54,7 @@ CREATE TABLE artists (
 
 time_table_create = ("""
 CREATE TABLE time (
-    start_time time,
+    start_time datetime,
     hour int,
     day int,
     week int,
@@ -74,7 +74,7 @@ INSERT INTO songplays (
     level,
     song_id,
     artist_id,
-    sesion_id,
+    session_id,
     location,
     user_agent
 )
@@ -105,7 +105,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s)
 # FIND SONGS
 
 song_select = ("""
-SELECT song_id, a.artist_id
+SELECT s.song_id, a.artist_id
 FROM artists a
 JOIN songs s
 ON s.artist_id = a.artist_id
