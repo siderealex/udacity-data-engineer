@@ -7,18 +7,21 @@ from sql_queries import *
 
 def process_song_file(cur, filepath):
     # open song file
-    df = pd.read_json(filepath, typ='ser').to_frame()
+    df = pd.read_json(filepath, lines=True)
 
-    # insert song record
-    song_data = df[0][['song_id', 'title', 'artist_id', 'year', 'duration']].values.to_list()
-    cur.execute(song_table_insert, song_data)
+    # Prepare & insert songs: drop duplicates, and select only relevant columns
+    song_df = df.drop_duplicates(subset='song_id')
+    song_df = song_df[['song_id', 'title', 'artist_id', 'year', 'duration']]
+    song_data = song_df.values.tolist()
+    for song in song_data:
+        cur.execute(song_table_insert, song)
 
-    # insert artist record
-    artist_data =
-        df[0][['artist_id', 'artist_name', 'artist_location', 'artist_latitude', 'artist_longitude']]
-        .values
-        .tolist()
-    cur.execute(artist_table_insert, artist_data)
+    # Prepare & insert artists: drop duplicates, and select only relevant columns
+    artist_df = df.drop_duplicates(subset='artist_id')
+    artist_df = artist_df[['artist_id', 'artist_name', 'artist_location', 'artist_latitude', 'artist_longitude']]
+    artist_data = artist_df.values.tolist()
+    for artist in artist_data:
+        cur.execute(artist_table_insert, artist)
 
 
 def process_log_file(cur, filepath):
@@ -35,6 +38,7 @@ def process_log_file(cur, filepath):
     time_data = [t, t.dt.hour, t.dt.day, t.dt.week, t.dt.month, t.dt.year, t.dt.weekday]
     column_labels = ['start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday']
 
+    # Create rows for time table
     time_list = []
     for n in range(len(time_data[0].index)):
         i = time_data[0].index[n]
@@ -58,9 +62,7 @@ def process_log_file(cur, filepath):
     #     cur.execute(time_table_insert, list(row))
 
     # Filter for the columns in the user table, and drop duplicates based on unique userId
-    user_df =
-        df[['userId', 'firstName', 'lastName', 'gender', 'level']]
-        .drop_duplicates(subset='userId')
+    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']].drop_duplicates(subset='userId')
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -71,7 +73,7 @@ def process_log_file(cur, filepath):
 
         # get songid and artistid from song and artist tables
         results = cur.execute(song_select, (row.song, row.artist, row.length))
-        songid, artistid = results if results else None, None
+        song_id, artist_id = results if results else None, None
 
         # Insert songplay record
         songplay_data = (
@@ -108,7 +110,7 @@ def process_data(cur, conn, filepath, func):
 
 
 def main():
-    conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
+    conn = psycopg2.connect("host=127.0.0.1 dbname=udacity_project2")
     cur = conn.cursor()
 
     process_data(cur, conn, filepath='data/song_data', func=process_song_file)
