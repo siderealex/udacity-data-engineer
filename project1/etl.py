@@ -6,8 +6,8 @@ from sql_queries import *
 
 
 def process_data(cur, conn, filepath, func):
-    '''Iterates over all data files, processing and inserting into database.
-    '''
+    '''Iterates over all data files, processing and inserting into database.'''
+
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
@@ -30,6 +30,7 @@ def process_song_file(cur, filepath):
     '''Reads in given song file
        and inserts song/artist information into database
     '''
+
     # open song file
     df = pd.read_json(filepath, lines=True)
 
@@ -53,6 +54,7 @@ def _insert_songs(cur, df):
     '''Prepare & insert songs: drop duplicates,
        and select only relevant columns
     '''
+
     song_df = df.drop_duplicates(subset='song_id')
     song_df = song_df[['song_id', 'title', 'artist_id', 'year', 'duration']]
     song_data = song_df.values.tolist()
@@ -64,6 +66,7 @@ def _insert_artists(cur, df):
     '''Prepare & insert artists: drop duplicates,
        and select only relevant columns
     '''
+
     artist_df = df.drop_duplicates(subset='artist_id')
     artist_df = artist_df[[
         'artist_id',
@@ -79,6 +82,7 @@ def _insert_artists(cur, df):
 
 def _insert_time(cur, df):
     '''Prepare and insert time rows'''
+
     # convert timestamp column to datetime
     t = pd.to_datetime(df['ts'], unit='ms')
 
@@ -124,6 +128,7 @@ def _insert_time(cur, df):
 
 def _insert_users(cur, df):
     '''Prepare and insert user rows'''
+
     # Filter for the columns in the user table,
     # and drop duplicates based on unique userId
     user_df = df[[
@@ -141,6 +146,7 @@ def _insert_users(cur, df):
 
 def _insert_songplays(cur, df):
     '''Prepare and insert songplays rows'''
+
     # insert songplay records
     for index, row in df.iterrows():
 
