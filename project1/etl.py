@@ -8,18 +8,18 @@ from sql_queries import *
 def process_data(cur, conn, filepath, func):
     '''Iterates over all data files, processing and inserting into database.'''
 
-    # get all files matching extension from directory
+    # Get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
         files = glob.glob(os.path.join(root, '*.json'))
         for f in files:
             all_files.append(os.path.abspath(f))
 
-    # get total number of files found
+    # Get total number of files found
     num_files = len(all_files)
     print('{} files found in {}'.format(num_files, filepath))
 
-    # iterate over files and process
+    # Iterate over files and process
     for i, datafile in enumerate(all_files, 1):
         func(cur, datafile)
         conn.commit()
@@ -31,7 +31,7 @@ def process_song_file(cur, filepath):
        and inserts song/artist information into database
     '''
 
-    # open song file
+    # Open song file
     df = pd.read_json(filepath, lines=True)
 
     _insert_songs(cur, df)
@@ -39,10 +39,10 @@ def process_song_file(cur, filepath):
 
 
 def process_log_file(cur, filepath):
-    # open log file
+    # Open log file
     df = pd.read_json(filepath, lines=True)
 
-    # filter by NextSong action
+    # Filter by NextSong action
     df = df[df['page'] == 'NextSong']
 
     _insert_time(cur, df)
@@ -83,10 +83,10 @@ def _insert_artists(cur, df):
 def _insert_time(cur, df):
     '''Prepare and insert time rows'''
 
-    # convert timestamp column to datetime
+    # Convert timestamp column to datetime
     t = pd.to_datetime(df['ts'], unit='ms')
 
-    # insert time data records
+    # Insert time data records
     time_data = [
         t,
         t.dt.hour,
@@ -139,18 +139,24 @@ def _insert_users(cur, df):
         'level'
     ]].drop_duplicates(subset='userId')
 
-    # insert user records
+    # Insert user records
     for i, row in user_df.iterrows():
         cur.execute(user_table_insert, row)
 
 
 def _insert_songplays(cur, df):
-    '''Prepare and insert songplays rows'''
+    '''Prepare and insert songplays rows.
+       Strategy:
+       1. Aggregate songplays info into Python list.
+       2. Convert list to csv
+       3. use PostGreSQL COPY to bulk insert rows.
+    '''
 
-    # insert songplay records
+    # Aggregating songplays
+    songplays_list = []
     for index, row in df.iterrows():
 
-        # get songid and artistid from song and artist tables
+        # Get songid and artistid from song and artist tables
         results = cur.execute(song_select, (row.song, row.artist, row.length))
         song_id, artist_id = results if results else None, None
 
@@ -165,7 +171,24 @@ def _insert_songplays(cur, df):
             row['location'],
             row['userAgent']
         )
-        cur.execute(songplay_table_insert, songplay_data)
+        songplays_list.append(songplay_data)
+
+    # Convert to csv
+    songplays_df = pd.DataFrame(songplays_list)
+    songplays_csv = songplays_df.to_csv('songplays.csv', index=False)
+
+    # COPY into DB
+    column_labels = [
+        'start_time',
+        'user_id',
+        'level',
+        'song_id',
+        'artist_id',
+        'session_id',
+        'location',
+        'user_agent'
+    ]
+    cur.copy_from(songplays_csv, 'songplays', columns=column_labels)
 
 
 def main():
