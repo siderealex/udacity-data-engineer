@@ -16,9 +16,16 @@ def process_song_file(cur, filepath):
     for song in song_data:
         cur.execute(song_table_insert, song)
 
-    # Prepare & insert artists: drop duplicates, and select only relevant columns
+    # Prepare & insert artists: drop duplicates,
+    # and select only relevant columns
     artist_df = df.drop_duplicates(subset='artist_id')
-    artist_df = artist_df[['artist_id', 'artist_name', 'artist_location', 'artist_latitude', 'artist_longitude']]
+    artist_df = artist_df[[
+        'artist_id',
+        'artist_name',
+        'artist_location',
+        'artist_latitude',
+        'artist_longitude'
+    ]]
     artist_data = artist_df.values.tolist()
     for artist in artist_data:
         cur.execute(artist_table_insert, artist)
@@ -35,8 +42,24 @@ def process_log_file(cur, filepath):
     t = pd.to_datetime(df['ts'], unit='ms')
 
     # insert time data records
-    time_data = [t, t.dt.hour, t.dt.day, t.dt.week, t.dt.month, t.dt.year, t.dt.weekday]
-    column_labels = ['start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday']
+    time_data = [
+        t,
+        t.dt.hour,
+        t.dt.day,
+        t.dt.week,
+        t.dt.month,
+        t.dt.year,
+        t.dt.weekday
+    ]
+    column_labels = [
+        'start_time',
+        'hour',
+        'day',
+        'week',
+        'month',
+        'year',
+        'weekday'
+    ]
 
     # Create rows for time table
     time_list = []
@@ -61,8 +84,15 @@ def process_log_file(cur, filepath):
     # for i, row in time_df.iterrows():
     #     cur.execute(time_table_insert, list(row))
 
-    # Filter for the columns in the user table, and drop duplicates based on unique userId
-    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']].drop_duplicates(subset='userId')
+    # Filter for the columns in the user table,
+    # and drop duplicates based on unique userId
+    user_df = df[[
+        'userId',
+        'firstName',
+        'lastName',
+        'gender',
+        'level'
+    ]].drop_duplicates(subset='userId')
 
     # insert user records
     for i, row in user_df.iterrows():
