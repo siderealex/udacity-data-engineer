@@ -5,10 +5,7 @@ import pandas as pd
 from sql_queries import *
 
 
-def process_song_file(cur, filepath):
-    # open song file
-    df = pd.read_json(filepath, lines=True)
-
+def _insert_songs(cur, df):
     # Prepare & insert songs: drop duplicates, and select only relevant columns
     song_df = df.drop_duplicates(subset='song_id')
     song_df = song_df[['song_id', 'title', 'artist_id', 'year', 'duration']]
@@ -16,6 +13,8 @@ def process_song_file(cur, filepath):
     for song in song_data:
         cur.execute(song_table_insert, song)
 
+
+def _insert_artists(cur, df):
     # Prepare & insert artists: drop duplicates,
     # and select only relevant columns
     artist_df = df.drop_duplicates(subset='artist_id')
@@ -31,13 +30,15 @@ def process_song_file(cur, filepath):
         cur.execute(artist_table_insert, artist)
 
 
-def process_log_file(cur, filepath):
-    # open log file
+def process_song_file(cur, filepath):
+    # open song file
     df = pd.read_json(filepath, lines=True)
 
-    # filter by NextSong action
-    df = df[df['page'] == 'NextSong']
+    _insert_songs(cur, df)
+    _insert_artists(cur, df)
 
+
+def _insert_time(cur, df):
     # convert timestamp column to datetime
     t = pd.to_datetime(df['ts'], unit='ms')
 
@@ -79,11 +80,9 @@ def process_log_file(cur, filepath):
 
     for row in time_list:
         cur.execute(time_table_insert, list(row.values()))
-    # time_df =
 
-    # for i, row in time_df.iterrows():
-    #     cur.execute(time_table_insert, list(row))
 
+def _insert_users(cur, df):
     # Filter for the columns in the user table,
     # and drop duplicates based on unique userId
     user_df = df[[
@@ -98,6 +97,8 @@ def process_log_file(cur, filepath):
     for i, row in user_df.iterrows():
         cur.execute(user_table_insert, row)
 
+
+def _insert_songplays(cur, df):
     # insert songplay records
     for index, row in df.iterrows():
 
@@ -117,6 +118,18 @@ def process_log_file(cur, filepath):
             row['userAgent']
         )
         cur.execute(songplay_table_insert, songplay_data)
+
+
+def process_log_file(cur, filepath):
+    # open log file
+    df = pd.read_json(filepath, lines=True)
+
+    # filter by NextSong action
+    df = df[df['page'] == 'NextSong']
+
+    _insert_time(cur, df)
+    _insert_users(cur, df)
+    _insert_songplays(cur, df)
 
 
 def process_data(cur, conn, filepath, func):
