@@ -3,6 +3,7 @@ import glob
 import psycopg2
 import pandas as pd
 from sql_queries import *
+from io import StringIO
 
 
 def process_data(cur, conn, filepath, func):
@@ -148,7 +149,7 @@ def _insert_songplays(cur, df):
     '''Prepare and insert songplays rows.
        Strategy:
        1. Aggregate songplays info into Python list.
-       2. Convert list to csv
+       2. Convert list to csv string
        3. use PostGreSQL COPY to bulk insert rows.
     '''
 
@@ -173,11 +174,7 @@ def _insert_songplays(cur, df):
         )
         songplays_list.append(songplay_data)
 
-    # Convert to csv
-    songplays_df = pd.DataFrame(songplays_list)
-    songplays_csv = songplays_df.to_csv('songplays.csv', index=False)
-
-    # COPY into DB
+    # Convert to csv string
     column_labels = [
         'start_time',
         'user_id',
@@ -188,7 +185,16 @@ def _insert_songplays(cur, df):
         'location',
         'user_agent'
     ]
-    cur.copy_from(songplays_csv, 'songplays', columns=column_labels)
+    songplays_df = pd.DataFrame(songplays_list, columns=column_labels)
+    songplays_csv = songplays_df.to_csv(header=False, index=False, sep='\t')
+
+    # # COPY into DB
+    cur.copy_from(
+        StringIO(songplays_csv),
+        'songplays',
+        columns=column_labels,
+        sep='\t'
+    )
 
 
 def main():
