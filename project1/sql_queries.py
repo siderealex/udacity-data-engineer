@@ -11,11 +11,11 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 songplay_table_create = ("""
 CREATE TABLE songplays (
     songplay_id SERIAL PRIMARY KEY NOT NULL,
-    start_time timestamp NOT NULL, # Critical identifier of songplays -> NOT NULL
-    user_id int REFERENCES users,
+    start_time timestamp NOT NULL,
+    user_id int NOT NULL,
     level varchar,
-    song_id varchar REFERENCES songs,
-    artist_id varchar REFERENCES artists,
+    song_id varchar,
+    artist_id varchar,
     session_id int,
     location varchar,
     user_agent varchar
@@ -35,8 +35,8 @@ CREATE TABLE users (
 song_table_create = ("""
 CREATE TABLE songs (
     song_id varchar PRIMARY KEY NOT NULL,
-    title varchar NOT NULL, # Critical identifier of songs -> NOT NULL
-    artist_id varchar REFERENCES artists,
+    title varchar NOT NULL,
+    artist_id varchar NOT NULL,
     year int,
     duration float
 )
@@ -45,7 +45,7 @@ CREATE TABLE songs (
 artist_table_create = ("""
 CREATE TABLE artists (
     artist_id varchar PRIMARY KEY NOT NULL,
-    name varchar NOT NULL, # Critical identifier of songs -> NOT NULL
+    name varchar NOT NULL,
     location varchar,
     latitude float,
     longitude float
@@ -85,19 +85,28 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 user_table_insert = ("""
 INSERT INTO users (user_id, first_name, last_name, gender, level)
 VALUES (%s, %s, %s, %s, %s)
-ON CONFLICT DO NOTHING
+ON CONFLICT  (user_id)
+DO UPDATE SET
+(first_name, last_name, gender, level)
+= (EXCLUDED.first_name, EXCLUDED.last_name, EXCLUDED.gender, EXCLUDED.level)
 """)
 
 song_table_insert = ("""
 INSERT INTO songs (song_id, title, artist_id, year, duration)
 VALUES (%s, %s, %s, %s, %s)
-ON CONFLICT DO NOTHING
+ON CONFLICT (song_id)
+DO UPDATE SET
+(title, artist_id, year, duration)
+= (EXCLUDED.title, EXCLUDED.artist_id, EXCLUDED.year, EXCLUDED.duration)
 """)
 
 artist_table_insert = ("""
 INSERT INTO artists (artist_id, name, location, latitude, longitude)
 VALUES (%s, %s, %s, %s, %s)
-ON CONFLICT DO NOTHING
+ON CONFLICT (artist_id)
+DO UPDATE SET
+(name, location, latitude, longitude)
+= (EXCLUDED.name, EXCLUDED.location, EXCLUDED.latitude, EXCLUDED.longitude)
 """)
 
 time_table_insert = ("""
