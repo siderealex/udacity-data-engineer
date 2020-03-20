@@ -11,11 +11,11 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 songplay_table_create = ("""
 CREATE TABLE songplays (
     songplay_id SERIAL PRIMARY KEY NOT NULL,
-    start_time timestamp,
-    user_id int,
+    start_time timestamp NOT NULL, # Critical identifier of songplays -> NOT NULL
+    user_id int REFERENCES users,
     level varchar,
-    song_id varchar,
-    artist_id varchar,
+    song_id varchar REFERENCES songs,
+    artist_id varchar REFERENCES artists,
     session_id int,
     location varchar,
     user_agent varchar
@@ -35,8 +35,8 @@ CREATE TABLE users (
 song_table_create = ("""
 CREATE TABLE songs (
     song_id varchar PRIMARY KEY NOT NULL,
-    title varchar,
-    artist_id varchar,
+    title varchar NOT NULL, # Critical identifier of songs -> NOT NULL
+    artist_id varchar REFERENCES artists,
     year int,
     duration float
 )
@@ -45,22 +45,24 @@ CREATE TABLE songs (
 artist_table_create = ("""
 CREATE TABLE artists (
     artist_id varchar PRIMARY KEY NOT NULL,
-    name varchar,
+    name varchar NOT NULL, # Critical identifier of songs -> NOT NULL
     location varchar,
     latitude float,
     longitude float
 )
 """)
 
+# If you have start_time, that means you have the rest of the columns,
+# so they should all be NOT NULL
 time_table_create = ("""
 CREATE TABLE time (
-    start_time timestamp,
-    hour int,
-    day int,
-    week int,
-    month int,
-    year int,
-    weekday varchar
+    start_time timestamp NOT NULL,
+    hour int NOT NULL,
+    day int NOT NULL,
+    week int NOT NULL,
+    month int NOT NULL,
+    year int NOT NULL,
+    weekday varchar NOT NULL
 )
 """)
 
