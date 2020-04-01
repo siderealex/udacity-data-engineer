@@ -151,10 +151,10 @@ def _open_redshift_tcp(config):
         default_sg = list(vpc.security_groups.all())[0]
         default_sg.authorize_ingress(
             GroupName=default_sg.group_name,
-            CidrIp=config['REDSHIFT']['IPV4_ADDRESS'],
+            CidrIp=os.environ['IPV4_ADDRESS'],
             IpProtocol='TCP',
-            FromPort=int(config['REDSHIFT']['PORT']),
-            ToPort=int(config['REDSHIFT']['PORT'])
+            FromPort=int(config['REDSHIFT']['DB_PORT']),
+            ToPort=int(config['REDSHIFT']['DB_PORT'])
         )
     except Exception as e:
         print('Error opening Redshift TCP:')
