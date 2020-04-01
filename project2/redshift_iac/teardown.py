@@ -21,8 +21,10 @@ def teardown_redshift():
 def _load_config():
     print('Loading Redshift parameters from config...')
 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = dir_path + '../dwh.cfg'
     config = configparser.ConfigParser()
-    config.read('../dwh.cfg')
+    config.read(config_path)
 
     return config
 
