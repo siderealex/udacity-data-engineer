@@ -22,7 +22,8 @@ def _load_config():
     print('Loading Redshift parameters from config...')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    config_path = dir_path + '../dwh.cfg'
+    config_path = dir_path + '/../dwh.cfg'
+    print(config_path)
     config = configparser.ConfigParser()
     config.read(config_path)
 
