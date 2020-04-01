@@ -22,7 +22,8 @@ def setup_redshift():
     # Allow access from IP address to connect to database
     _open_redshift_tcp(config)
 
-    config.write('../dwh.cfg')
+    with open('../dwh.cfg', 'w') as configfile:
+        config.write(configfile)
 
     print('Redshift setup complete.')
 
@@ -31,7 +32,7 @@ def _load_config():
     print('Loading Redshift parameters from config...')
 
     config = configparser.ConfigParser()
-    config.read('dwh.cfg')
+    config.read('../dwh.cfg')
 
     return config
 

@@ -3,7 +3,7 @@ import configparser
 import os
 
 
-def delete_redshift():
+def teardown_redshift():
     print('Starting Redshift deletion...')
 
     config = _load_config()
@@ -12,7 +12,8 @@ def delete_redshift():
 
     _delete_redshift_cluster(config)
 
-    config.write('../dwh.cfg')
+    with open('../dwh.cfg', 'w') as configfile:
+        config.write(configfile)
 
     print('Redshift deletion complete')
 
@@ -21,7 +22,7 @@ def _load_config():
     print('Loading Redshift parameters from config...')
 
     config = configparser.ConfigParser()
-    config.read('dwh.cfg')
+    config.read('../dwh.cfg')
 
     return config
 
