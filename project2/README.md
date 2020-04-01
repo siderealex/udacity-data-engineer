@@ -18,3 +18,7 @@ The following variables are stored in the environment to avoid security issues:
 - AWS_SECRET
 - IPV4_ADDRESS
 - VPC_ID
+
+TODO
+----
+- Make sure setting environment variables from Python is working as expected
