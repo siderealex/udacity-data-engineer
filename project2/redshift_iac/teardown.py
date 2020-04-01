@@ -12,6 +12,8 @@ def delete_redshift():
 
     _delete_redshift_cluster(config)
 
+    config.write('../dwh.cfg')
+
     print('Redshift deletion complete')
 
 
