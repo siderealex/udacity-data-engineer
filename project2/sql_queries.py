@@ -20,25 +20,33 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 staging_events_table_create = ("""
 CREATE TABLE staging_events (
 artist varchar,
-first_name varchar,
+auth varchar,
+firstName varchar,
 gender char,
-last_name varchar,
+itemInSession integer,
+lastName varchar,
+length numeric,
 level varchar,
 location varchar,
-session_id integer,
-title varchar,
-start_time timestamp,
-user_id integer
+method varchar,
+page varchar,
+registration numeric,
+sessionId integer,
+song varchar,
+ts timestamp,
+userAgent varchar,
+userId integer
 )
 """)
 
 staging_songs_table_create = ("""
 CREATE TABLE staging_songs (
+num_songs integer,
 artist_id varchar,
-latitude integer,
-longitude integer,
-location varchar,
-artist varchar,
+artist_latitude numeric,
+artist_longitude numeric,
+artist_location varchar,
+artist_name varchar,
 song_id varchar,
 title varchar,
 duration numeric,
@@ -110,15 +118,7 @@ user_agent varchar
 """)
 
 
-
-
-
-
-
-
-
-
-IAM_ROLE = os.environ['REDSHIFT_ARN']
+IAM_ROLE = config['IAM']['REDSHIFT_ARN']
 
 # STAGING TABLES
 LOG_DATA = config['S3']['LOG_DATA']
