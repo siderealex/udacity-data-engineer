@@ -33,7 +33,8 @@ page varchar,
 registration numeric,
 sessionId integer,
 song varchar,
-ts timestamp,
+status integer,
+ts varchar,
 userAgent varchar,
 userId integer
 )
@@ -41,16 +42,16 @@ userId integer
 
 staging_songs_table_create = ("""
 CREATE TABLE staging_songs (
-num_songs integer,
-artist_id varchar,
-artist_latitude numeric,
-artist_longitude numeric,
-artist_location varchar,
-artist_name varchar,
 song_id varchar,
+num_songs integer,
 title varchar,
+artist_name varchar,
+artist_latitude numeric,
+year integer,
 duration numeric,
-year integer
+artist_id varchar,
+artist_longitude numeric,
+artist_location varchar
 )
 """)
 
@@ -70,7 +71,7 @@ CREATE TABLE artists (
 artist_id varchar NOT NULL UNIQUE,
 name varchar NOT NULL,
 location varchar,
-lattitude numeric,
+latitude numeric,
 longitude numeric
 -- PRIMARY KEY(artist_id)
 )
@@ -96,7 +97,7 @@ day integer NOT NULL,
 week integer NOT NULL,
 month integer NOT NULL,
 year integer NOT NULL,
-weekday varchar NOT NULL
+weekday integer NOT NULL
 )
 """)
 
@@ -118,14 +119,15 @@ user_agent varchar
 """)
 
 
+# STAGING TABLES
+
 IAM_ROLE = config['IAM']['REDSHIFT_ARN']
 
-# STAGING TABLES
 LOG_DATA = config['S3']['LOG_DATA']
 LOG_JSONPATH = config['S3']['LOG_JSONPATH']
 staging_events_copy = ("""
-COPY staging_events FROM
-'{}'
+COPY staging_events
+FROM '{}'
 IAM_ROLE '{}'
 JSON '{}'
 """).format(LOG_DATA, IAM_ROLE, LOG_JSONPATH)
@@ -140,19 +142,66 @@ IAM_ROLE '{}'
 
 # FINAL TABLES
 
+# songplay_id will be automatically inserted since its an IDENTITY column
 songplay_table_insert = ("""
+INSERT INTO songplays (start_time,
+                       user_id,
+                       level,
+                       song_id,
+                       artist_id,
+                       session_id,
+                       location,
+                       user_agent)
+SELECT ts AS start_time,
+       userId AS user_id,
+       level,
+       song_id,
+       artist_id,
+       sessionId AS session_id,
+       location,
+       userAgent AS user_agent
+FROM staging_events se
+JOIN staging_songs ss
+ON se.artist = ss.artist_name AND se.song = ss.title
+WHERE page = 'NextSong'
 """)
 
 user_table_insert = ("""
+INSERT INTO users (user_id, first_name, last_name, gender, level)
+SELECT DISTINCT userId AS user_id,
+       firstName AS first_name,
+       lastName AS last_name,
+       gender,
+       level
+FROM staging_events
+WHERE page = 'NextSong'
 """)
 
 song_table_insert = ("""
+INSERT INTO songs (song_id, title, artist_id, year, duration)
+SELECT song_id, title, artist_id, year, duration
+FROM staging_songs
 """)
 
 artist_table_insert = ("""
+INSERT INTO artists (artist_id, name, location, latitude, longitude)
+SELECT artist_id,
+       artist_name AS name,
+       artist_location AS location,
+       artist_latitude AS latitude,
+       artist_longitude AS longitude
+FROM staging_songs
 """)
 
 time_table_insert = ("""
+INSERT INTO time (start_time, hour, day, week, month, year, weekday)
+SELECT ts AS start_time,
+       DATE_PART('hour', TIMESTAMP ts) AS hour
+       DATE_PART('day', TIMESTAMP ts) AS day,
+       DATE_PART('week', TIMESTAMP ts) AS week,
+       DATE_PART('month', TIMESTAMP ts) AS year,
+       EXTRACT(DOW FROM TIMESTAMP ts) AS weekday
+FROM staging_events
 """)
 
 # QUERY LISTS
