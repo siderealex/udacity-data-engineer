@@ -2,6 +2,7 @@ import boto3
 import configparser
 import json
 import os
+import time
 
 
 def setup_redshift():
@@ -138,8 +139,8 @@ def _wait_redshift_creation(config):
 
         time_to_wait = 60 * 2**(wait_cycles)
         wait_cycles += 1
-        print("Waiting %s milleseconds..." % time_to_wait)
-        wait(time_to_wait)
+        print("Waiting %s seconds..." % time_to_wait)
+        time.sleep(time_to_wait)
 
 
 def _open_redshift_tcp(config):
