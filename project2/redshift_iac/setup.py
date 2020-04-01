@@ -25,18 +25,6 @@ def setup_redshift():
     print('Redshift setup complete.')
 
 
-def delete_redshift():
-    print('Starting Redshift deletion...')
-
-    config = _load_config()
-
-    _delete_iam_role(config)
-
-    _delete_redshift_cluster(config)
-
-    print('Redshift deletion complete')
-
-
 def _load_config():
     print('Loading Redshift parameters from config...')
 
@@ -57,7 +45,7 @@ def _prepare_iam_role(config):
     )
 
     iam_role = _create_iam_role(iam, config['IAM']['ROLE_NAME'])
-    os.environ['REDSHIFT_ARN'] = iam_role['Role']['Arn']
+    config['IAM']['REDSHIFT_ARN'] = iam_role['Role']['Arn']
 
     _attach_iam_policy(iam, config['IAM']['ROLE_NAME'])
 
@@ -116,7 +104,7 @@ def _create_redshift_cluster(config):
         ClusterIdentifier=config['REDSHIFT']['CLUSTER_IDENTIFIER'],
         MasterUsername=config['REDSHIFT']['DB_USER'],
         MasterUserPassword=config['REDSHIFT']['DB_PASSWORD'],
-        IamRoles=[os.environ['REDSHIFT_ARN']]
+        IamRoles=[config['IAM']['REDSHIFT_ARN']]
     )
 
 
@@ -133,7 +121,8 @@ def _wait_redshift_creation(config):
         cluster_props = redshift.describe_clusters(ClusterIdentifier=config['REDSHIFT']['CLUSTER_IDENTIFIER'])['Clusters'][0]
 
         if cluster_props['ClusterStatus'] == 'available':
-            os.environ['REDSHIFT_ENDPOINT'] = cluster_props['Endpoint']['Address']
+            config['REDSHIFT']['ENDPOINT'] = cluster_props['Endpoint']['Address']
+            config['REDSHIFT']['VPC_ID'] = cluster_props['VpcId']
             print('Redshift creation complete.')
             break
 
@@ -153,11 +142,11 @@ def _open_redshift_tcp(config):
     )
 
     try:
-        vpc = ec2.Vpc(id=os.environ['VPC_ID'])
+        vpc = ec2.Vpc(id=config['REDSHIFT']['VPC_ID'])
         default_sg = list(vpc.security_groups.all())[0]
         default_sg.authorize_ingress(
             GroupName=default_sg.group_name,
-            CidrIp=os.environ['IPV4_ADDRESS'],
+            CidrIp=config['REDSHIFT']['IPV4_ADDRESS'],
             IpProtocol='TCP',
             FromPort=int(config['REDSHIFT']['PORT']),
             ToPort=int(config['REDSHIFT']['PORT'])
@@ -165,37 +154,6 @@ def _open_redshift_tcp(config):
     except Exception as e:
         print('Error opening Redshift TCP:')
         print(e)
-
-
-def _delete_redshift_cluster(config):
-    print('Deleting Redshift cluster...')
-    redshift = boto3.client(
-        'redshift',
-        region_name=config['REDSHIFT']['REGION'],
-        aws_access_key_id=os.environ['AWS_KEY'],
-        aws_secret_access_key=os.environ['AWS_SECRET']
-    )
-
-    redshift.delete_cluster(
-        ClusterIdentifier=config['REDSHIFT']['CLUSTER_IDENTIFIER'],
-        SkipFinalClusterSnapshot=True
-    )
-
-
-def _delete_iam_role(config):
-    print('Deleting IAM role...')
-    iam = boto3.client(
-        'iam',
-        aws_access_key_id=os.environ['AWS_KEY'],
-        aws_secret_access_key=os.environ['AWS_SECRET'],
-        region_name=config['REDSHIFT']['REGION']
-    )
-
-    iam.detach_role_policy(
-        RoleName=config['IAM']['ROLE_NAME'],
-        PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-    )
-    iam.delete_role(RoleName=config['IAM']['ROLE_NAME'])
 
 
 def main():
