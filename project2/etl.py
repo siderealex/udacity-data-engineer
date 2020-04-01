@@ -22,7 +22,7 @@ def main():
 
     conn = psycopg2.connect(
         "host={} dbname={} user={} password={} port={}".format(
-            os.environ['REDSHIFT_ENDPOINT'],
+            config['REDSHIFT']['ENDPOINT'],
             config['REDSHIFT']['DB_NAME'],
             config['REDSHIFT']['DB_USER'],
             config['REDSHIFT']['DB_PASSWORD'],
