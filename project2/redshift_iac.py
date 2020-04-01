@@ -52,7 +52,7 @@ def _prepare_iam_role(config):
         'iam',
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET'],
-        region_name='us-west-2'
+        region_name=config['REDSHIFT']['REGION']
     )
 
     iam_role = _create_iam_role(iam, config['IAM']['ROLE_NAME'])
@@ -102,7 +102,7 @@ def _create_redshift_cluster(config):
     print('Creating Redshift cluster...')
     redshift = boto3.client(
         'redshift',
-        region_name='us-west-2',
+        region_name=config['REDSHIFT']['REGION'],
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET']
     )
@@ -122,7 +122,7 @@ def _create_redshift_cluster(config):
 def _wait_redshift_creation(config):
     redshift = boto3.client(
         'redshift',
-        region_name='us-west-2',
+        region_name=config['REDSHIFT']['REGION'],
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET']
     )
@@ -146,7 +146,7 @@ def _open_redshift_tcp(config):
     print('Opening Redshift TCP...')
     ec2 = boto3.resource(
         'ec2',
-        region_name='us-west-2',
+        region_name=config['REDSHIFT']['REGION'],
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET']
     )
@@ -170,7 +170,7 @@ def _delete_redshift_cluster(config):
     print('Deleting Redshift cluster...')
     redshift = boto3.client(
         'redshift',
-        region_name='us-west-2',
+        region_name=config['REDSHIFT']['REGION'],
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET']
     )
@@ -187,7 +187,7 @@ def _delete_iam_role(config):
         'iam',
         aws_access_key_id=os.environ['AWS_KEY'],
         aws_secret_access_key=os.environ['AWS_SECRET'],
-        region_name='us-west-2'
+        region_name=config['REDSHIFT']['REGION']
     )
 
     iam.detach_role_policy(
