@@ -22,3 +22,4 @@ The following variables are stored in the environment to avoid security issues:
 TODO
 ----
 - Make sure setting environment variables from Python is working as expected
+- Think about adding SortKeys
