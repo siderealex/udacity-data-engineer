@@ -34,7 +34,7 @@ registration numeric,
 sessionId integer,
 song varchar,
 status integer,
-ts varchar,
+ts bigint,
 userAgent varchar,
 userId integer
 )
@@ -154,7 +154,7 @@ INSERT INTO songplays (start_time,
                        session_id,
                        location,
                        user_agent)
-SELECT '1970-01-01'::date + CAST(ts AS bigint)/1000.0 * interval '1 second' AS start_time,
+SELECT '1970-01-01'::date + ts/1000.0 * interval '1 second' AS start_time,
        userId AS user_id,
        level,
        song_id,
@@ -197,7 +197,7 @@ FROM staging_songs
 
 time_table_insert = ("""
 INSERT INTO time (start_time, hour, day, week, month, year, weekday)
-select '1970-01-01'::date + CAST(ts AS bigint)/1000.0 * interval '1 second' AS start_time,
+select '1970-01-01'::date + ts/1000.0 * interval '1 second' AS start_time,
        DATE_PART('hour', TIMESTAMP start_time) AS hour
        DATE_PART('day', TIMESTAMP start_time) AS day,
        DATE_PART('week', TIMESTAMP start_time) AS week,
