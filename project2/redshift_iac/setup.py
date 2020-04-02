@@ -8,6 +8,8 @@ import time
 def setup_redshift():
     print('Starting Redshift setup...')
 
+    _check_environment_variables()
+
     config = _load_config()
 
     # Create the Redshift IAM role and attach the correct policy
@@ -26,6 +28,13 @@ def setup_redshift():
         config.write(configfile)
 
     print('Redshift setup complete.')
+
+
+# Raise KeyError if any of these are not set
+def _check_environment_variables():
+    os.environ['AWS_KEY']
+    os.environ['AWS_SECRET']
+    os.environ['IPV4_ADDRESS']
 
 
 def _load_config():
