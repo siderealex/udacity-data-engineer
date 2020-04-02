@@ -4,6 +4,8 @@ import os
 
 
 def teardown_redshift():
+    """Teardown the Redshift cluster: Deletes the IAM role,
+    and then deletes the cluster."""
     print('Starting Redshift deletion...')
 
     config = _load_config()
@@ -19,11 +21,12 @@ def teardown_redshift():
 
 
 def _load_config():
+    """Loads the config from dwh.cfg"""
     print('Loading Redshift parameters from config...')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = dir_path + '/../dwh.cfg'
-    print(config_path)
+
     config = configparser.ConfigParser()
     config.read(config_path)
 
@@ -31,6 +34,7 @@ def _load_config():
 
 
 def _delete_redshift_cluster(config):
+    # Use boto3 to delete the cluster
     print('Deleting Redshift cluster...')
     redshift = boto3.client(
         'redshift',
@@ -46,6 +50,7 @@ def _delete_redshift_cluster(config):
 
 
 def _delete_iam_role(config):
+    # Use boto3 to delete the Redshift IAM role
     print('Deleting IAM role...')
     iam = boto3.client(
         'iam',

@@ -6,6 +6,18 @@ import time
 
 
 def setup_redshift():
+    """Sets up the Redshift cluster for use in ETL:
+    1. Creates a Redshift IAM role and attaches the S3ReadOnly policy to it.
+    2. Creates the Redshift cluster.
+    3. Once creation is complete, opens the TCP port for the IPV4_ADDRESS
+    as specified.
+
+    The setup relies on the following environment variables to be set:
+    AWS_KEY - AWS key for Redshift admin
+    AWS_SECRET - AWS secret for Redshift admin
+    IPV4_ADDRESS - IPV4 CIDR address for machine that will be interacting
+    with the cluster, in the format 0.0.0.0/0
+    """
     print('Starting Redshift setup...')
 
     _check_environment_variables()

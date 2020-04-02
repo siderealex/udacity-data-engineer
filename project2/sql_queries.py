@@ -16,6 +16,11 @@ artist_table_drop = "DROP TABLE IF EXISTS artists"
 time_table_drop = "DROP TABLE IF EXISTS time"
 
 # CREATE TABLES
+# Redshift doesn't respect PRIMARY KEY or FOREIGN KEY declarations,
+# so they are included in this file as comments to help elucidate
+# the intended data structure at the application layer.
+#
+# Application level constraints should be used to enforce the constraints.
 
 staging_events_table_create = ("""
 CREATE TABLE staging_events (
@@ -145,6 +150,7 @@ TRUNCATECOLUMNS
 # FINAL TABLES
 
 # songplay_id will be automatically inserted since its an IDENTITY column
+# start_time is created by converting epoch time to a timestamp
 songplay_table_insert = ("""
 INSERT INTO songplays (start_time,
                        user_id,
@@ -195,6 +201,7 @@ SELECT artist_id,
 FROM staging_songs
 """)
 
+# start_time is created by converting epoch time to a timestamp
 time_table_insert = ("""
 INSERT INTO time (start_time, hour, day, week, month, year, weekday)
 select '1970-01-01'::date + ts/1000.0 * interval '1 second' AS start_time,
