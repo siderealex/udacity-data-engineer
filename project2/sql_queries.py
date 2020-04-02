@@ -198,11 +198,12 @@ FROM staging_songs
 time_table_insert = ("""
 INSERT INTO time (start_time, hour, day, week, month, year, weekday)
 select '1970-01-01'::date + ts/1000.0 * interval '1 second' AS start_time,
-       DATE_PART('hour', TIMESTAMP start_time) AS hour
-       DATE_PART('day', TIMESTAMP start_time) AS day,
-       DATE_PART('week', TIMESTAMP start_time) AS week,
-       DATE_PART('month', TIMESTAMP start_time) AS year,
-       EXTRACT(DOW FROM TIMESTAMP start_time) AS weekday
+       EXTRACT(hour FROM start_time) AS hour,
+       EXTRACT(day FROM start_time) AS day,
+       EXTRACT(week FROM start_time) AS week,
+       EXTRACT(month FROM start_time) AS month,
+       EXTRACT(year FROM start_time) AS year,
+       EXTRACT(dow FROM start_time) AS weekday
 FROM staging_events
 """)
 
