@@ -69,8 +69,8 @@ level varchar
 artist_table_create = ("""
 CREATE TABLE artists (
 artist_id varchar NOT NULL UNIQUE,
-name varchar NOT NULL,
-location varchar,
+name varchar(max) NOT NULL,
+location varchar(max),
 latitude numeric,
 longitude numeric
 -- PRIMARY KEY(artist_id)
