@@ -45,13 +45,13 @@ CREATE TABLE staging_songs (
 song_id varchar,
 num_songs integer,
 title varchar,
-artist_name varchar,
+artist_name varchar(max),
 artist_latitude numeric,
 year integer,
 duration numeric,
 artist_id varchar,
 artist_longitude numeric,
-artist_location varchar
+artist_location varchar(max)
 )
 """)
 
@@ -61,7 +61,7 @@ user_id integer NOT NULL UNIQUE,
 first_name varchar,
 last_name varchar,
 gender char(1),
-level integer
+level varchar
 -- PRIMARY KEY(user_id)
 )
 """)
@@ -138,6 +138,8 @@ staging_songs_copy = ("""
 COPY staging_songs FROM
 '{}'
 IAM_ROLE '{}'
+JSON 'auto'
+TRUNCATECOLUMNS
 """).format(SONG_DATA, IAM_ROLE)
 
 # FINAL TABLES
@@ -152,7 +154,7 @@ INSERT INTO songplays (start_time,
                        session_id,
                        location,
                        user_agent)
-SELECT ts AS start_time,
+SELECT '1970-01-01'::date + CAST(ts AS bigint)/1000.0 * interval '1 second' AS start_time,
        userId AS user_id,
        level,
        song_id,
@@ -195,12 +197,12 @@ FROM staging_songs
 
 time_table_insert = ("""
 INSERT INTO time (start_time, hour, day, week, month, year, weekday)
-SELECT ts AS start_time,
-       DATE_PART('hour', TIMESTAMP ts) AS hour
-       DATE_PART('day', TIMESTAMP ts) AS day,
-       DATE_PART('week', TIMESTAMP ts) AS week,
-       DATE_PART('month', TIMESTAMP ts) AS year,
-       EXTRACT(DOW FROM TIMESTAMP ts) AS weekday
+select '1970-01-01'::date + CAST(ts AS bigint)/1000.0 * interval '1 second' AS start_time,
+       DATE_PART('hour', TIMESTAMP start_time) AS hour
+       DATE_PART('day', TIMESTAMP start_time) AS day,
+       DATE_PART('week', TIMESTAMP start_time) AS week,
+       DATE_PART('month', TIMESTAMP start_time) AS year,
+       EXTRACT(DOW FROM TIMESTAMP start_time) AS weekday
 FROM staging_events
 """)
 
