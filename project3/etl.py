@@ -26,7 +26,7 @@ def create_spark_session():
 
 def process_song_data(spark, input_data, output_data):
     # get filepath to song data file
-    song_data = input_data + '/song_data/*/*/*/*.json'
+    song_data = input_data + 'song_data/*/*/*/*.json'
 
     # read song data file
     df = spark.read.json(song_data)
@@ -75,14 +75,6 @@ def process_log_data(spark, input_data, output_data):
 
     # write users table to parquet files
     users_df.write.parquet(output_data + 'users', mode='overwrite')
-
-    'start_time': date_format(ts, 'MM/dd/yyyy H:m:s'),
-    'hour': hour(ts),
-    'day': dayofmonth(ts),
-    'week': weekofyear(ts),
-    'month': month(ts),
-    'year': year(ts),
-    'weekday': date_format(ts, 'E')
 
     time_df = filtered_df \
         .withColumn('start_time', f.from_unixtime(filtered_df.ts / 1000)) \
