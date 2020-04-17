@@ -37,7 +37,7 @@ def process_song_data(spark, input_data, output_data):
         .drop_duplicates(subset=['song_id'])
 
     # write songs table to parquet files partitioned by year and artist
-    songs_df.write.parquet(output_data + 'songs', mode='overwrite')
+    songs_df.write.partitionBy('year', 'artist_id').parquet(output_data + 'songs', mode='overwrite')
 
     # extract columns to create artists table
     artists_df = df \
@@ -77,7 +77,7 @@ def process_log_data(spark, input_data, output_data):
     users_df.write.parquet(output_data + 'users', mode='overwrite')
 
     time_df = filtered_df \
-        .withColumn('start_time', f.from_unixtime(filtered_df.ts / 1000)) \
+        .withColumn('start_time', from_unixtime(filtered_df.ts / 1000)) \
         .select(hour('start_time').alias('hour'),
                 dayofmonth('start_time').alias('day'),
                 weekofyear('start_time').alias('week'),
@@ -87,7 +87,7 @@ def process_log_data(spark, input_data, output_data):
                 )
 
     # write time table to parquet files partitioned by year and month
-    time_df.write.parquet(output_data + 'time', mode='overwrite')
+    time_df.write.partitionBy('year', 'month').parquet(output_data + 'time', mode='overwrite')
 
     # read in song data to use for songplays table. Read from parquet as that
     # table is the dimension table the end-user will ultimately be using.
@@ -101,7 +101,7 @@ def process_log_data(spark, input_data, output_data):
 
     # extract columns from joined dataset to create songplays table
     songplays_df = joined_df.select(
-        col('ts').alias('start_time'),
+        from_unixtime(joined_df.ts / 1000).alias('start_time'),
         col('userId').alias('user_id'),
         'level',
         'song_id',
@@ -114,7 +114,10 @@ def process_log_data(spark, input_data, output_data):
     songplays_df = songplays_df.withColumn('songplay_id', monotonically_increasing_id())
 
     # write songplays table to parquet files partitioned by year and month
-    songplays_df.write.parquet(output_data + 'songplays', mode='overwrite')
+    songplays_df \
+        .write \
+        .partitionBy(year('start_time'), month('start_time')) \
+        .parquet(output_data + 'songplays', mode='overwrite')
 
 
 def main():
