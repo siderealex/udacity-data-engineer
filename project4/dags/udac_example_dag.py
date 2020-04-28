@@ -27,7 +27,7 @@ start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
-    s3_bucket='logs',
+    s3_bucket='events',
     table_name='staging_events'
 )
 

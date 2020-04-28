@@ -1,8 +1,9 @@
+from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator, Variable
 from airflow.utils.decorators import apply_defaults
 
-from helpers.SqlQueries import s3_copy
+from helpers import SqlQueries
 
 # s3_bucket should be the Airflow variable name which points to the correct S3 endpoint
 # AwsHook should be set in the Airflow configuration: 'aws_credentials' with an access key and secret_key
@@ -24,8 +25,8 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info('Executing StageToRedshiftOperator')
         aws_hook = AwsHook('aws_credentials')
         credentials = aws_hook.get_credentials()
-        sql_stmt = s3_copy.format(table_name, Variable.get(s3_bucket), credentials.access_key, credentials.secret_key)
+        sql_stmt = SqlQueries.s3_copy.format(self.table_name, Variable.get(self.s3_bucket), credentials.access_key, credentials.secret_key)
         redshift_hook = PostgresHook('redshift')
 
-        self.log.info('Copying from s3 bucket {} into Redshift table {}'.format(table_name, Variable.get(s3_bucket)))
+        self.log.info('Copying from s3 bucket {} into Redshift table {}'.format(self.table_name, Variable.get(self.s3_bucket)))
         redshift_hook.run(sql_stmt)

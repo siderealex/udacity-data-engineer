@@ -2,7 +2,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from helpers.SqlQueries import null_count, table_count
+from helpers import SqlQueries
 
 class DataQualityOperator(BaseOperator):
 
@@ -28,8 +28,10 @@ class DataQualityOperator(BaseOperator):
             self.log.info('Checking {} for emptiness').format(table)
             result = SqlQueries.table_count.format(table)
             row_count = result.fetch()[0]
-            if !row_count:
-                self.log.error('Table {} has no rows!'.format(table))
+            if row_count == 0:
+                error_message = 'Table {} has no rows!'.format(table)
+                self.log.error(error_message)
+                raise ValueError(error_message)
             else:
                 self.log.info('Table {} has {} rows'.format(table, row_count))
 
@@ -39,6 +41,8 @@ class DataQualityOperator(BaseOperator):
                 result = SqlQueries.null_count.format(table, column)
                 null_count = result.fetch()[0]
                 if null_count > 0:
-                    self.log.error('{}.{} has {} null values!'.format(table, column, null_count))
+                    error_message ='{}.{} has {} null values!'.format(table, column, null_count)
+                    self.log.error(error_message)
+                    raise ValueError(error_message)
                 else:
                     self.log.info('{}.{} is free of null values, hurray!'.format(table, column))

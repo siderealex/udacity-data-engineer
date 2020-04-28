@@ -2,7 +2,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from helpers.SqlQueries import table_to_table_insert
+from helpers import SqlQueries
 
 class LoadFactOperator(BaseOperator):
 
@@ -24,4 +24,4 @@ class LoadFactOperator(BaseOperator):
         redshift_hook = PostgresHook('redshift')
 
         self.log.info('Loading Redshift Fact Table')
-        redshift_hook.run(table_to_table_insert.format(self.table_name, self.select_data_statement))
+        redshift_hook.run(SqlQueries.table_to_table_insert.format(self.table_name, self.select_data_statement))
